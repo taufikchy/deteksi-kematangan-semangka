@@ -583,7 +583,7 @@ body {
   text-align: center;
   color: var(--muted-2);
   font-size: 0.78rem;
-  padding-top: 10px;
+  padding: 10px 0 20px;
 }
 .footer-sub { margin-top: 2px; color: #475569; }
 
