@@ -465,14 +465,14 @@ function updateResultPanel(detections) {
     if (total === 0) {
       summary.innerHTML = 'Belum ada data deteksi. Silakan pilih foto atau nyalakan kamera terlebih dahulu.';
     } else {
-      const sM = countMVal > 0 ? `rata-rata keyakinan <strong>${avgMatangPct}%</strong>` : '';
-      const sMe = countMeVal > 0 ? `rata-rata keyakinan <strong>${avgMentahPct}%</strong>` : '';
+      const sM = countMVal > 0 ? `📊 persen dari total <strong>${pctMVal}%</strong> · 🎯 rata-rata keyakinan AI <strong>${avgMatangPct}%</strong>` : '';
+      const sMe = countMeVal > 0 ? `📊 persen dari total <strong>${pctMeVal}%</strong> · 🎯 rata-rata keyakinan AI <strong>${avgMentahPct}%</strong>` : '';
 
       const ringkasan = [];
-      ringkasan.push(`Total terdeteksi: <strong>${total} buah</strong> → <strong>Matang ${countMVal} (${pctMVal}%)</strong> &nbsp;·&nbsp; <strong>Mentah ${countMeVal} (${pctMeVal}%)</strong>.`);
+      ringkasan.push(`🧺 Total terdeteksi <strong>${total} buah</strong> → Matang <strong>${countMVal}</strong> · Mentah <strong>${countMeVal}</strong>.`);
 
-      if (countMVal > 0) ringkasan.push(`🍇 Semangka <strong>Matang</strong>: ${sM}.`);
-      if (countMeVal > 0) ringkasan.push(`🍓 Semangka <strong>Mentah</strong>: ${sMe}.`);
+      if (countMVal > 0) ringkasan.push(`🍇 <strong>Matang</strong>: ${sM}.`);
+      if (countMeVal > 0) ringkasan.push(`🍓 <strong>Mentah</strong>: ${sMe}.`);
 
       if (pctMVal >= 70) {
         ringkasan.push('🌿 Sebagian besar buah sudah <strong>siap dipanen</strong>.');

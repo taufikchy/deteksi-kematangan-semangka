@@ -393,7 +393,37 @@ body {
 .result-class-unit {
   font-size: 0.78rem;
   color: var(--muted-2);
-  margin: 1px 0 10px;
+  align-self: flex-end;
+  padding-bottom: 4px;
+}
+.result-metric-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.result-metric {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  margin-top: 10px;
+}
+.result-metric-lbl {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+.result-matang .result-metric {
+  border-color: rgba(124,58,237,0.22);
+  background: linear-gradient(180deg, rgba(124,58,237,0.08), rgba(124,58,237,0.02));
+}
+.result-mentah .result-metric {
+  border-color: rgba(220,38,38,0.22);
+  background: linear-gradient(180deg, rgba(220,38,38,0.08), rgba(220,38,38,0.02));
 }
 
 .result-row {
