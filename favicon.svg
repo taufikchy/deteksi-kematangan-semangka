@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="rind" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="60%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </radialGradient>
+    <radialGradient id="daging" cx="50%" cy="55%" r="50%">
+      <stop offset="0%" stop-color="#fca5a5"/>
+      <stop offset="50%" stop-color="#f87171"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="34" r="28" fill="url(#rind)"/>
+  <ellipse cx="32" cy="36" rx="22" ry="20" fill="url(#daging)"/>
+  <path d="M22 30 Q24 26 26 30" stroke="#166534" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M32 26 Q34 22 36 26" stroke="#166534" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M42 30 Q44 26 46 30" stroke="#166534" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="24" cy="36" r="2" fill="#1e293b"/>
+  <circle cx="32" cy="40" r="2" fill="#1e293b"/>
+  <circle cx="40" cy="36" r="2" fill="#1e293b"/>
+  <circle cx="28" cy="44" r="1.8" fill="#1e293b"/>
+  <circle cx="36" cy="44" r="1.8" fill="#1e293b"/>
+  <path d="M28 10 Q32 4 36 10 Q40 16 32 18 Q24 16 28 10 Z" fill="#15803d"/>
+  <path d="M30 12 Q32 8 34 12" stroke="#166534" stroke-width="1" fill="none"/>
+</svg>

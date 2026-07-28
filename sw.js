@@ -1,11 +1,16 @@
 // sw.js — Service Worker untuk cache permanen model AI dan static assets
-const CACHE_VERSION = 'v1-semangka-deteksi-2026-07-28';
+const CACHE_VERSION = 'v2-semangka-deteksi-2026-07-28-icons';
 const CORE_ASSETS = [
   './',
   './index.html',
   './style.css',
   './script.js',
-  './best.onnx'
+  './best.onnx',
+  './favicon.svg',
+  './favicon.ico',
+  './icon-192.png',
+  './icon-512.png',
+  './manifest.json'
 ];
 
 const ORT_CDN_PATTERN = /^https:\/\/cdn\.jsdelivr\.net\/npm\/onnxruntime-web@[^/]+\/dist\//;
