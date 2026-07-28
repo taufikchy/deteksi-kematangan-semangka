@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🍉 Deteksi Kematangan Semangka</title>
+  <meta name="description" content="Aplikasi deteksi kematangan semangka berbasis AI menggunakan YOLOv8, berjalan langsung di perangkat Anda tanpa perlu upload ke server.">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.min.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ============ HERO / HEADER ============ -->
+    <header class="hero">
+      <div class="hero-badge">
+        <span class="hero-badge-icon">🌱</span>
+        <span>Agrowisata · Smart Farming</span>
+      </div>
+      <div class="hero-icon">🍉</div>
+      <h1 class="hero-title">Deteksi Kematangan Semangka</h1>
+      <p class="hero-subtitle">
+        Menggunakan model <strong>YOLOv8</strong>. Deteksi berjalan <strong>langsung di HP Anda</strong>,
+        100% privat, tanpa perlu kirim gambar ke server.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-num">2</div><div class="hero-stat-lbl">Kelas</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">640px</div><div class="hero-stat-lbl">Input</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">On-Dev</div><div class="hero-stat-lbl">Aman</div></div>
+      </div>
+    </header>
+
+    <!-- ============ CARA KERJA (Ringkas) ============ -->
+    <section class="info-card">
+      <h2>📍 Cara Kerja Singkat</h2>
+      <ol class="steps">
+        <li><span class="step-num">1</span>Pilih mode: Upload foto atau pakai Kamera langsung.</li>
+        <li><span class="step-num">2</span>Aplikasi menandai setiap buah semangka yang terdeteksi.</li>
+        <li><span class="step-num">3</span>Hasil muncul secara otomatis: jumlah, persentase, dan status kematangan.</li>
+      </ol>
+    </section>
+
+    <!-- ============ PENGATURAN KECEPATAN AI (DI ATAS MODE, SEBELUM PILIH TAB) ============ -->
+    <section class="perf-card" id="perf-card" aria-label="Pengaturan kecepatan deteksi">
+      <div class="perf-head">
+        <h2>⚙️ Atur Kecepatan Deteksi</h2>
+        <span class="perf-chip">Pilih sebelum Upload / Kamera</span>
+      </div>
+      <div class="perf-options" role="radiogroup" aria-label="Pilih preset kecepatan">
+        <label class="perf-opt">
+          <input type="radio" name="perf" value="cepat" onchange="setPerfPreset(this.value)">
+          <div class="perf-card-inner">
+            <div class="perf-title">⚡ Super Cepat</div>
+            <div class="perf-desc">2x/detik · Cocok HP lama</div>
+          </div>
+        </label>
+        <label class="perf-opt">
+          <input type="radio" name="perf" value="normal" checked onchange="setPerfPreset(this.value)">
+          <div class="perf-card-inner">
+            <div class="perf-title">✅ Seimbang</div>
+            <div class="perf-desc">3x/detik · Default</div>
+          </div>
+        </label>
+        <label class="perf-opt">
+          <input type="radio" name="perf" value="akurat" onchange="setPerfPreset(this.value)">
+          <div class="perf-card-inner">
+            <div class="perf-title">🎯 Akurat</div>
+            <div class="perf-desc">6x/detik · HP menengah+</div>
+          </div>
+        </label>
+      </div>
+      <div class="perf-info" id="perf-info">300ms / 3fps · Mode Seimbang</div>
+    </section>
+
+    <!-- ============ MODE TABS ============ -->
+    <div class="mode-tabs" role="tablist">
+      <button class="tab active" id="tab-upload" role="tab" aria-selected="true" onclick="switchMode('upload')">
+        <span class="tab-icon">🖼️</span>
+        <span class="tab-text">Upload Foto</span>
+      </button>
+      <button class="tab" id="tab-webcam" role="tab" aria-selected="false" onclick="switchMode('webcam')">
+        <span class="tab-icon">📷</span>
+        <span class="tab-text">Kamera Live</span>
+      </button>
+    </div>
+
+    <!-- ============ CANVAS / PREVIEW ============ -->
+    <div class="canvas-wrapper" id="canvas-wrapper">
+      <canvas id="canvas"></canvas>
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-icon">🍉</div>
+        <div class="placeholder-title">Belum ada gambar</div>
+        <div class="placeholder-desc">Pilih foto dari galeri atau nyalakan kamera untuk memulai.</div>
+      </div>
+    </div>
+
+    <!-- ============ CONTROL (UPLOAD / WEBCAM) ============ -->
+    <div class="controls" id="ctrl-upload">
+      <label class="btn btn-primary" for="file-input">
+        <span>📁</span> Pilih Gambar dari Galeri
+      </label>
+      <input type="file" id="file-input" accept=".jpg,.jpeg,.png,image/*" capture="environment" hidden>
+    </div>
+
+    <div class="controls hidden" id="ctrl-webcam">
+      <button class="btn btn-primary" id="btn-webcam" onclick="toggleWebcam()">
+        <span>📷</span> Nyalakan Kamera
+      </button>
+    </div>
+
+    <!-- ============ STATUS BAR ============ -->
+    <div class="status" id="status">⏳ Memuat model AI, harap tunggu sebentar...</div>
+
+    <!-- ============ PROGRESS PEMUATAN MODEL ============ -->
+    <div class="model-progress-wrap" id="model-progress-wrap" style="display:none">
+      <div class="model-progress-row">
+        <span class="model-progress-label">📦 Unduh Model AI</span>
+        <span class="model-progress-pct" id="model-progress-text">0%</span>
+      </div>
+      <div class="model-progress-track">
+        <div class="model-progress-bar" id="model-progress-bar"></div>
+      </div>
+      <div class="model-progress-tip">
+        🔒 Cuma di-unduh sekali. Setelah ini buka aplikasi → langsung siap <strong>INSTAN</strong>.
+      </div>
+    </div>
+
+    <!-- ============ HASIL DETEKSI (PENTING!) ============ -->
+    <section class="result-card" id="result-card" aria-live="polite">
+      <div class="result-header">
+        <h2>📊 Hasil Deteksi</h2>
+        <span class="result-chip" id="result-chip">Belum ada data</span>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-class result-matang">
+          <div class="result-class-head">
+            <span class="result-dot"></span>
+            <span class="result-class-name">Matang</span>
+          </div>
+          <div class="result-class-value" id="count-matang">0</div>
+          <div class="result-class-unit">buah</div>
+
+          <div class="result-row">
+            <div class="result-row-lbl">Persentase</div>
+            <div class="result-row-val" id="pct-matang">0%</div>
+          </div>
+          <div class="progress"><div class="progress-bar" id="bar-matang"></div></div>
+
+          <div class="result-row mt">
+            <div class="result-row-lbl">🎯 Akurasi Rata-rata</div>
+            <div class="result-row-val result-acc-val" id="acc-matang">—</div>
+          </div>
+          <div class="progress progress-soft"><div class="progress-bar" id="acc-bar-matang"></div></div>
+        </div>
+
+        <div class="result-class result-mentah">
+          <div class="result-class-head">
+            <span class="result-dot"></span>
+            <span class="result-class-name">Mentah</span>
+          </div>
+          <div class="result-class-value" id="count-mentah">0</div>
+          <div class="result-class-unit">buah</div>
+
+          <div class="result-row">
+            <div class="result-row-lbl">Persentase</div>
+            <div class="result-row-val" id="pct-mentah">0%</div>
+          </div>
+          <div class="progress"><div class="progress-bar" id="bar-mentah"></div></div>
+
+          <div class="result-row mt">
+            <div class="result-row-lbl">🎯 Akurasi Rata-rata</div>
+            <div class="result-row-val result-acc-val" id="acc-mentah">—</div>
+          </div>
+          <div class="progress progress-soft"><div class="progress-bar" id="acc-bar-mentah"></div></div>
+        </div>
+      </div>
+
+      <div class="result-summary" id="result-summary">
+        Setelah Anda unggah foto atau nyalakan kamera, ringkasan hasil deteksi akan muncul di sini.
+      </div>
+    </section>
+
+    <!-- ============ LEGEND ============ -->
+    <div class="legend">
+      <div class="legend-item"><span class="dot" style="background:#7C3AED"></span>Semangka Matang (siap panen)</div>
+      <div class="legend-item"><span class="dot" style="background:#DC2626"></span>Semangka Mentah (belum siap)</div>
+    </div>
+
+    <!-- ============ TIPS AGROWISATA ============ -->
+    <section class="info-card tips-card">
+      <h2>💡 Tips Saat di Kebun Agrowisata</h2>
+      <ul class="tips-list">
+        <li>Arahkan kamera <strong>sedekat mungkin ke 1–3 buah</strong>, hindari terlalu banyak objek agar hasil lebih akurat.</li>
+        <li>Pastikan <strong>cukup cahaya</strong> — hindari area terlalu gelap atau terkena sinar matahari langsung yang silau.</li>
+        <li>Jika hasil tidak muncul, coba ambil foto dari <strong>sudut lain</strong> dan pastikan bagian kulit semangka terlihat jelas.</li>
+      </ul>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="footer">
+      <div>Dibuat untuk Skripsi · Deteksi Kematangan Semangka YOLOv8</div>
+      <div class="footer-sub">© Agrowisata Smart Detection</div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
