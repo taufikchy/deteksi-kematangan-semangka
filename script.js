@@ -561,20 +561,30 @@ async function detectImage(imgElement) {
 
   const srcW = imgElement.videoWidth || imgElement.naturalWidth || imgElement.width;
   const srcH = imgElement.videoHeight || imgElement.naturalHeight || imgElement.height;
+  if (!srcW || !srcH) {
+    hideDetecting();
+    setStatus('❌ Gambar tidak valid (ukuran 0). Coba ambil foto lagi.');
+    return;
+  }
 
-  canvas.width  = srcW;
-  canvas.height = srcH;
+  const maxSide = 1280;
+  const displayScale = Math.min(1, maxSide / Math.max(srcW, srcH));
+  const drawW = Math.max(1, Math.round(srcW * displayScale));
+  const drawH = Math.max(1, Math.round(srcH * displayScale));
+
+  canvas.width  = drawW;
+  canvas.height = drawH;
   placeholder.style.display = 'none';
   if (detecting) detecting.style.display = 'block';
 
-  ctx.drawImage(imgElement, 0, 0, srcW, srcH);
+  ctx.drawImage(imgElement, 0, 0, drawW, drawH);
 
   let detections = [];
   try {
     showDetecting('⏳ Sedang mendeteksi...');
     setStatus('🔍 Menganalisis gambar...');
     detections = await runInference(imgElement);
-    drawBoxes(ctx, detections, 1, 1);
+    drawBoxes(ctx, detections, displayScale, displayScale);
     updateResultPanel(detections);
   } finally {
     if (detecting) detecting.style.display = 'none';
@@ -598,23 +608,28 @@ function setStatusFrozen(frozen) {
   el.dataset.frozen = frozen ? '1' : '0';
 }
 
-async function fileToImageSource(file) {
-  if (window.createImageBitmap) {
-    try {
-      return await createImageBitmap(file, { imageOrientation: 'from-image' });
-    } catch {}
-    try {
-      return await createImageBitmap(file);
-    } catch {}
-  }
-
-  return await new Promise((resolve, reject) => {
+function fileToHtmlImage(file) {
+  return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Gagal memuat gambar')); };
     img.src = url;
   });
+}
+
+async function fileToImageSource(file) {
+  if (window.createImageBitmap) {
+    try {
+      const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      if (bmp && bmp.width > 0 && bmp.height > 0) return bmp;
+    } catch {}
+    try {
+      const bmp = await createImageBitmap(file);
+      if (bmp && bmp.width > 0 && bmp.height > 0) return bmp;
+    } catch {}
+  }
+  return await fileToHtmlImage(file);
 }
 
 function setupFileInputElement(inputId) {
@@ -628,7 +643,7 @@ function setupFileInputElement(inputId) {
       setStatusFrozen(true);
       showDetecting('⏳ Memproses foto...');
       setStatus('⏳ Memproses foto...');
-      const src = await fileToImageSource(file);
+      const src = inputId === 'camera-input' ? await fileToHtmlImage(file) : await fileToImageSource(file);
       await detectImage(src);
     } catch (err) {
       hideDetecting();
