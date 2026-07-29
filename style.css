@@ -108,6 +108,15 @@ body {
 }
 .online-text { color: var(--muted); font-weight: 700; }
 .online-count { color: #ffffff; font-weight: 900; min-width: 1.2em; text-align: right; }
+
+/* Badge bisa diklik untuk toggle */
+.online-badge { cursor: pointer; user-select: none; transition: padding 0.18s ease, background 0.18s ease; }
+.online-badge:hover { background: rgba(15, 23, 42, 0.92); }
+
+/* State ringkas: sembunyikan teks & angka, sisakan titik hijau saja */
+.online-badge.collapsed { padding: 8px; gap: 0; }
+.online-badge.collapsed .online-text,
+.online-badge.collapsed .online-count { display: none; }
 .hero-icon { font-size: 3rem; line-height: 1; margin-bottom: 6px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
 .hero-title {
   font-size: clamp(1.5rem, 4.4vw, 2rem);

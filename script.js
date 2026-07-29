@@ -31,6 +31,20 @@ let lastInferMs    = 0;
 const SUPABASE_URL = 'https://rhjkanuqyweklxyxpzbd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_w-pJzxEVHUacGY0ZfKzQEA_3XTGu9nt';
 let _onlineChannel = null;
+let _onlineCollapsed = false;
+try { _onlineCollapsed = localStorage.getItem('online-badge-collapsed') === '1'; } catch {}
+
+function applyBadgeCollapsed() {
+  const badge = document.getElementById('online-badge');
+  if (!badge) return;
+  badge.classList.toggle('collapsed', _onlineCollapsed);
+}
+
+function toggleOnlineBadge() {
+  _onlineCollapsed = !_onlineCollapsed;
+  try { localStorage.setItem('online-badge-collapsed', _onlineCollapsed ? '1' : '0'); } catch {}
+  applyBadgeCollapsed();
+}
 
 function setOnlineCount(val) {
   const badge = document.getElementById('online-badge');
@@ -45,11 +59,15 @@ function setOnlineCount(val) {
   }
   el.textContent = String(Math.round(val));
   badge.style.display = 'inline-flex';
+  applyBadgeCollapsed();
 }
 
 function initOnlinePresence() {
   const badge = document.getElementById('online-badge');
   if (!badge) return;
+  // Klik badge → toggle antara tampil penuh ("Online: 2") dan ringkas (titik hijau saja).
+  badge.addEventListener('click', toggleOnlineBadge);
+  applyBadgeCollapsed();
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
   const sb = window.supabase && window.supabase.createClient ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
   if (!sb) return;
