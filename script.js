@@ -412,6 +412,11 @@ function computeIoU(a, b) {
 // VISUALISASI: GAMBAR BOUNDING BOX DI CANVAS
 // ============================================================
 function drawBoxes(ctx, detections, scaleX, scaleY) {
+  const canvas = ctx.canvas;
+  const rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+  const pxPerCssPx = (!isWebcamActive && rect && rect.width > 0) ? (canvas.width / rect.width) : 1;
+  const boost = (!isWebcamActive) ? Math.min(4, Math.max(1, pxPerCssPx)) : 1;
+
   detections.forEach(({ x1, y1, x2, y2, conf, classId }) => {
     const color = COLORS[classId];
     const label = `${CLASSES[classId]} ${(conf * 100).toFixed(1)}%`;
@@ -420,17 +425,30 @@ function drawBoxes(ctx, detections, scaleX, scaleY) {
     const sx2 = x2 * scaleX, sy2 = y2 * scaleY;
 
     ctx.strokeStyle = color;
-    ctx.lineWidth   = 5;
+    ctx.lineWidth   = 5 * boost;
     ctx.strokeRect(sx1, sy1, sx2 - sx1, sy2 - sy1);
 
-    ctx.font = 'bold 32px Segoe UI, sans-serif';
+    const fontSize = 32 * boost;
+    ctx.font = `bold ${fontSize}px Segoe UI, sans-serif`;
     const textW = ctx.measureText(label).width;
-    const boxH  = 44;
+    const boxH  = 44 * boost;
     ctx.fillStyle = color;
-    ctx.fillRect(sx1 - 2, sy1 - boxH - 4, textW + 20, boxH);
+    const padX = 10 * boost;
+    const padY = 4 * boost;
+    const boxX = sx1 - 2 * boost;
+    let boxY = sy1 - boxH - padY;
+    if (boxY < 0) boxY = sy1 + padY;
+    ctx.fillRect(boxX, boxY, textW + padX * 2, boxH);
 
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(label, sx1 + 8, sy1 - 14);
+    const textX = sx1 + 8 * boost;
+    const textY = boxY + boxH - 14 * boost;
+    if (boost > 1.05) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+      ctx.lineWidth = 4 * boost;
+      ctx.strokeText(label, textX, textY);
+    }
+    ctx.fillText(label, textX, textY);
   });
 }
 
