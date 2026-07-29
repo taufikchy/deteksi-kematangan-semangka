@@ -28,6 +28,51 @@ let lastFpsSlot    = 0;
 let lastFpsFrames  = 0;
 let lastInferMs    = 0;
 
+const SUPABASE_URL = 'https://rhjkanuqyweklxyxpzbd.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_w-pJzxEVHUacGY0ZfKzQEA_3XTGu9nt';
+let _onlineChannel = null;
+
+function setOnlineCount(val) {
+  const badge = document.getElementById('online-badge');
+  const el = document.getElementById('online-count');
+  if (!badge || !el) return;
+  if (typeof val !== 'number' || !Number.isFinite(val)) {
+    badge.style.display = 'none';
+    return;
+  }
+  el.textContent = String(Math.max(1, Math.round(val)));
+  badge.style.display = 'inline-flex';
+}
+
+function initOnlinePresence() {
+  const badge = document.getElementById('online-badge');
+  if (!badge) return;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+  const sb = window.supabase && window.supabase.createClient ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  if (!sb) return;
+
+  const presenceKey = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : (Date.now().toString(16) + Math.random().toString(16).slice(2));
+  _onlineChannel = sb.channel('semangka-online', { config: { presence: { key: presenceKey } } });
+
+  const sync = () => {
+    const state = _onlineChannel.presenceState();
+    const count = state ? Object.keys(state).length : 0;
+    setOnlineCount(count);
+  };
+
+  _onlineChannel.on('presence', { event: 'sync' }, sync);
+  _onlineChannel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      _onlineChannel.track({ online_at: new Date().toISOString() });
+      sync();
+    }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    try { _onlineChannel && _onlineChannel.untrack(); } catch {}
+  });
+}
+
 function setPlaceholderState(state) {
   const wrap = document.getElementById('placeholder');
   const icon = document.getElementById('placeholder-icon');
@@ -978,5 +1023,6 @@ function setPerfPreset(key) {
 document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
   setupFileInputs();
+  initOnlinePresence();
   modelLoadPromise = loadModel();
 });
