@@ -112,6 +112,7 @@
     <!-- ============ CANVAS / PREVIEW ============ -->
     <div class="canvas-wrapper" id="canvas-wrapper">
       <canvas id="canvas"></canvas>
+      <div class="detecting" id="detecting" style="display:none">⏳ Sedang mendeteksi...</div>
       <div class="placeholder" id="placeholder">
         <div class="placeholder-icon">🍉</div>
         <div class="placeholder-title">Belum ada gambar</div>
@@ -125,6 +126,11 @@
         <span>📁</span> Pilih Gambar dari Galeri
       </label>
       <input type="file" id="file-input" accept=".jpg,.jpeg,.png,image/*" hidden>
+
+      <label class="btn btn-secondary" for="camera-input">
+        <span>📸</span> Foto Sekarang
+      </label>
+      <input type="file" id="camera-input" accept=".jpg,.jpeg,.png,image/*" capture="environment" hidden>
     </div>
 
     <div class="controls hidden" id="ctrl-webcam">

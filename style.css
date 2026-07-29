@@ -228,6 +228,9 @@ body {
 .controls {
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 .controls.hidden { display: none; }
 
@@ -250,8 +253,27 @@ body {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), #5B21B6);
 }
+.btn-secondary {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+}
 .btn.danger {
   background: linear-gradient(135deg, var(--danger), #991B1B);
+}
+
+.detecting {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(8px);
 }
 
 /* ===================================================== STATUS */

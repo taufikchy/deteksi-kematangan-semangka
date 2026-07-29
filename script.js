@@ -497,6 +497,7 @@ function switchMode(mode) {
   const ctrlWebcam = document.getElementById('ctrl-webcam');
   const canvas     = document.getElementById('canvas');
   const placeholder = document.getElementById('placeholder');
+  const detecting = document.getElementById('detecting');
 
   if (mode === 'upload') {
     tabUpload.classList.add('active');
@@ -506,6 +507,7 @@ function switchMode(mode) {
     stopWebcam();
     canvas.width = 0; canvas.height = 0;
     placeholder.style.display = 'block';
+    if (detecting) detecting.style.display = 'none';
     updateResultPanel([]);
   } else {
     tabUpload.classList.remove('active');
@@ -513,6 +515,7 @@ function switchMode(mode) {
     ctrlUpload.classList.add('hidden');
     ctrlWebcam.classList.remove('hidden');
     placeholder.style.display = 'none';
+    if (detecting) detecting.style.display = 'none';
     updateResultPanel([]);
   }
 }
@@ -524,13 +527,15 @@ async function detectImage(imgElement) {
   const canvas      = document.getElementById('canvas');
   const ctx         = canvas.getContext('2d');
   const placeholder = document.getElementById('placeholder');
+  const detecting   = document.getElementById('detecting');
 
-  const srcW = imgElement.naturalWidth  || imgElement.width;
-  const srcH = imgElement.naturalHeight || imgElement.height;
+  const srcW = imgElement.videoWidth || imgElement.naturalWidth || imgElement.width;
+  const srcH = imgElement.videoHeight || imgElement.naturalHeight || imgElement.height;
 
   canvas.width  = srcW;
   canvas.height = srcH;
   placeholder.style.display = 'none';
+  if (detecting) detecting.style.display = 'block';
 
   ctx.drawImage(imgElement, 0, 0, srcW, srcH);
 
@@ -539,6 +544,7 @@ async function detectImage(imgElement) {
 
   drawBoxes(ctx, detections, 1, 1);
   updateResultPanel(detections);
+  if (detecting) detecting.style.display = 'none';
 
   if (detections.length === 0) {
     setStatus('ℹ️ Tidak ada objek terdeteksi.');
@@ -552,34 +558,76 @@ async function detectImage(imgElement) {
 // ============================================================
 // FILE INPUT HANDLER
 // ============================================================
-function setupFileInput() {
-  const fileInput = document.getElementById('file-input');
-  if (!fileInput) return;
+function setStatusFrozen(frozen) {
+  const el = document.getElementById('status');
+  if (!el) return;
+  el.dataset.frozen = frozen ? '1' : '0';
+}
 
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+async function fileToImageSource(file) {
+  if (window.createImageBitmap) {
+    try {
+      return await createImageBitmap(file, { imageOrientation: 'from-image' });
+    } catch {}
+    try {
+      return await createImageBitmap(file);
+    } catch {}
+  }
 
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.onload = () => detectImage(img);
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
+  return await new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Gagal memuat gambar')); };
+    img.src = url;
   });
+}
+
+function setupFileInputElement(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      setStatusFrozen(true);
+      const src = await fileToImageSource(file);
+      await detectImage(src);
+    } catch (err) {
+      setStatus('❌ Gagal memproses gambar: ' + (err && err.message ? err.message : String(err)));
+    } finally {
+      setStatusFrozen(false);
+      input.value = '';
+    }
+  });
+}
+
+function setupFileInputs() {
+  setupFileInputElement('file-input');
+  setupFileInputElement('camera-input');
 }
 
 // ============================================================
 // WEBCAM: TOGGLE ON/OFF
 // ============================================================
 async function toggleWebcam() {
-  const btn = document.getElementById('btn-webcam');
   if (isWebcamActive) {
     stopWebcam();
-    if (btn) { btn.textContent = 'Nyalakan Kamera'; btn.classList.remove('danger'); }
   } else {
     await startWebcam();
+  }
+}
+
+function setWebcamButton(active) {
+  const btn = document.getElementById('btn-webcam');
+  if (!btn) return;
+  if (active) {
+    btn.innerHTML = '<span>🛑</span> Matikan Kamera';
+    btn.classList.add('danger');
+  } else {
+    btn.innerHTML = '<span>📷</span> Nyalakan Kamera';
+    btn.classList.remove('danger');
   }
 }
 
@@ -589,8 +637,6 @@ async function startWebcam() {
   video.setAttribute('autoplay', '');
   video.setAttribute('muted', '');
   video.setAttribute('webkit-playsinline', '');
-
-  const btn = document.getElementById('btn-webcam');
 
   try {
     const prefW = window.innerWidth < 720 ? 640 : 1280;
@@ -606,7 +652,7 @@ async function startWebcam() {
     isWebcamActive = true;
     lastDetections = [];
     window.__camVideoEl = video;
-    if (btn) { btn.textContent = 'Matikan Kamera'; btn.classList.add('danger'); }
+    setWebcamButton(true);
 
     // ── Arsitektur 2 loop: render vs inference terpisah ──
     startRenderLoop(video);
@@ -624,9 +670,7 @@ function stopWebcam() {
   if (inferenceTimer) { clearInterval(inferenceTimer); inferenceTimer = null; }
   if (webcamStream) { webcamStream.getTracks().forEach(t => t.stop()); webcamStream = null; }
   lastDetections = [];
-
-  const btn = document.getElementById('btn-webcam');
-  if (btn) { btn.textContent = 'Nyalakan Kamera'; btn.classList.remove('danger'); }
+  setWebcamButton(false);
 }
 
 // ============================================================
@@ -754,6 +798,6 @@ function setPerfPreset(key) {
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
-  setupFileInput();
+  setupFileInputs();
   loadModel();
 });
