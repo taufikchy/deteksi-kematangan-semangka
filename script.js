@@ -18,6 +18,7 @@ const PERF_PRESETS = {
 let activePresetKey = 'normal';
 
 let session        = null;   // ONNX InferenceSession
+let modelLoadPromise = null;
 let webcamStream   = null;   // MediaStream dari kamera
 let animFrameId    = null;   // ID requestAnimationFrame (hanya untuk gambar video)
 let inferenceTimer = null;   // Timer interval inference (throttle)
@@ -116,12 +117,33 @@ async function loadModel() {
     setModelProgress(100);
     setTimeout(() => setModelProgress(-1), 400); // sembunyikan progress bar
     setStatus('✅ Model siap. Pilih gambar atau nyalakan kamera.');
+    return true;
 
   } catch (e) {
     setModelProgress(-1);
     setStatus('❌ Gagal memuat model: ' + e.message);
     console.error(e);
+    return false;
   }
+}
+
+function showDetecting(msg) {
+  const el = document.getElementById('detecting');
+  if (!el) return;
+  el.textContent = msg || '⏳ Sedang mendeteksi...';
+  el.style.display = 'block';
+}
+
+function hideDetecting() {
+  const el = document.getElementById('detecting');
+  if (!el) return;
+  el.style.display = 'none';
+}
+
+async function ensureModelReady() {
+  if (session) return true;
+  if (modelLoadPromise) await modelLoadPromise;
+  return !!session;
 }
 
 // ============================================================
@@ -529,6 +551,14 @@ async function detectImage(imgElement) {
   const placeholder = document.getElementById('placeholder');
   const detecting   = document.getElementById('detecting');
 
+  showDetecting('⏳ Menyiapkan deteksi...');
+  const ready = await ensureModelReady();
+  if (!ready) {
+    hideDetecting();
+    setStatus('⏳ Model AI belum siap. Coba tunggu sebentar lalu ulangi.');
+    return;
+  }
+
   const srcW = imgElement.videoWidth || imgElement.naturalWidth || imgElement.width;
   const srcH = imgElement.videoHeight || imgElement.naturalHeight || imgElement.height;
 
@@ -539,12 +569,16 @@ async function detectImage(imgElement) {
 
   ctx.drawImage(imgElement, 0, 0, srcW, srcH);
 
-  setStatus('🔍 Menganalisis gambar...');
-  const detections = await runInference(imgElement);
-
-  drawBoxes(ctx, detections, 1, 1);
-  updateResultPanel(detections);
-  if (detecting) detecting.style.display = 'none';
+  let detections = [];
+  try {
+    showDetecting('⏳ Sedang mendeteksi...');
+    setStatus('🔍 Menganalisis gambar...');
+    detections = await runInference(imgElement);
+    drawBoxes(ctx, detections, 1, 1);
+    updateResultPanel(detections);
+  } finally {
+    if (detecting) detecting.style.display = 'none';
+  }
 
   if (detections.length === 0) {
     setStatus('ℹ️ Tidak ada objek terdeteksi.');
@@ -592,11 +626,15 @@ function setupFileInputElement(inputId) {
     if (!file) return;
     try {
       setStatusFrozen(true);
+      showDetecting('⏳ Memproses foto...');
+      setStatus('⏳ Memproses foto...');
       const src = await fileToImageSource(file);
       await detectImage(src);
     } catch (err) {
+      hideDetecting();
       setStatus('❌ Gagal memproses gambar: ' + (err && err.message ? err.message : String(err)));
     } finally {
+      hideDetecting();
       setStatusFrozen(false);
       input.value = '';
     }
@@ -670,6 +708,7 @@ function stopWebcam() {
   if (inferenceTimer) { clearInterval(inferenceTimer); inferenceTimer = null; }
   if (webcamStream) { webcamStream.getTracks().forEach(t => t.stop()); webcamStream = null; }
   lastDetections = [];
+  hideDetecting();
   setWebcamButton(false);
 }
 
@@ -719,12 +758,21 @@ function startInferenceLoop(video) {
   let inFlight = false; // hindari tumpang tindih inference
   const preset = PERF_PRESETS[activePresetKey];
   if (inferenceTimer) clearInterval(inferenceTimer);
+  let overlayTimer = null;
 
   const tick = async () => {
     if (!isWebcamActive || inFlight) return;
     if (!(video.videoWidth > 0 && video.videoHeight > 0)) return;
+    if (!session) {
+      showDetecting('⏳ Menunggu model AI...');
+      return;
+    }
     inFlight = true;
     const t0 = performance.now();
+    if (overlayTimer) clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(() => {
+      if (inFlight && isWebcamActive) showDetecting('⏳ Sedang mendeteksi...');
+    }, 160);
     try {
       const det = await runInference(video);
       lastInferMs = performance.now() - t0;
@@ -733,6 +781,8 @@ function startInferenceLoop(video) {
       throttledResultPanel(det);
     } finally {
       inFlight = false;
+      if (overlayTimer) { clearTimeout(overlayTimer); overlayTimer = null; }
+      hideDetecting();
     }
   };
   inferenceTimer = setInterval(tick, preset.intervalMs);
@@ -799,5 +849,5 @@ function setPerfPreset(key) {
 document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
   setupFileInputs();
-  loadModel();
+  modelLoadPromise = loadModel();
 });
