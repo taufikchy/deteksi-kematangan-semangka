@@ -82,20 +82,22 @@ body {
   margin-bottom: 14px;
 }
 .online-badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1000;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  background: rgba(15, 23, 42, 0.62);
-  border: 1px solid rgba(255,255,255,0.14);
+  padding: 6px 11px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(255,255,255,0.16);
   color: #e2e8f0;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 800;
   border-radius: 999px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.28);
 }
 .online-dot {
   width: 8px;
@@ -720,7 +722,7 @@ body {
 @media (max-width: 480px) {
   body { padding: 14px 10px 28px; }
   .hero { padding: 22px 16px 18px; }
-  .online-badge { top: 10px; right: 10px; }
+  .online-badge { bottom: 12px; right: 12px; font-size: 0.7rem; padding: 5px 9px; }
   .tab { padding: 11px 8px; font-size: 0.88rem; }
   .canvas-wrapper { min-height: 260px; }
   .result-grid { gap: 10px; }
