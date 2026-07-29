@@ -217,6 +217,25 @@
       <div class="result-summary" id="result-summary">
         Setelah Anda unggah foto atau nyalakan kamera, ringkasan hasil deteksi akan muncul di sini.
       </div>
+
+      <div class="detail-card" id="detail-card" style="display:none">
+        <div class="detail-head">
+          <div class="detail-title">🧾 Detail Deteksi</div>
+          <div class="detail-sub" id="detail-sub">—</div>
+        </div>
+        <div class="detail-table-wrap">
+          <table class="detail-table" aria-label="Detail deteksi per buah">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Kelas</th>
+                <th>Keyakinan</th>
+              </tr>
+            </thead>
+            <tbody id="detail-body"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
     <!-- ============ LEGEND ============ -->

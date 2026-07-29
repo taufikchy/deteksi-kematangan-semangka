@@ -478,6 +478,9 @@ function updateResultPanel(detections) {
   const accBarM = document.getElementById('acc-bar-matang');
   const accBarMe = document.getElementById('acc-bar-mentah');
   const summary = document.getElementById('result-summary');
+  const detailCard = document.getElementById('detail-card');
+  const detailSub = document.getElementById('detail-sub');
+  const detailBody = document.getElementById('detail-body');
 
   const matangList = detections.filter(d => d.classId === 0);
   const mentahList = detections.filter(d => d.classId === 1);
@@ -548,6 +551,36 @@ function updateResultPanel(detections) {
       }
 
       summary.innerHTML = ringkasan.join(' ');
+    }
+  }
+
+  if (detailCard && detailSub && detailBody) {
+    if (total === 0 || isWebcamActive) {
+      detailCard.style.display = 'none';
+      detailSub.textContent = '—';
+      detailBody.innerHTML = '';
+    } else {
+      detailCard.style.display = 'block';
+      detailSub.textContent = `${total} objek`;
+
+      const sorted = [...detections].sort((a, b) => b.conf - a.conf);
+      detailBody.innerHTML = sorted.map((d, i) => {
+        const color = COLORS[d.classId];
+        const cls = CLASSES[d.classId];
+        const confPct = (d.conf * 100).toFixed(1) + '%';
+        return `
+          <tr>
+            <td>${i + 1}</td>
+            <td>
+              <span class="detail-kelas">
+                <span class="detail-dot" style="background:${color}"></span>
+                ${cls}
+              </span>
+            </td>
+            <td class="detail-conf">${confPct}</td>
+          </tr>
+        `;
+      }).join('');
     }
   }
 }

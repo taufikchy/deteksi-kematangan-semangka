@@ -504,6 +504,77 @@ body {
 }
 .result-summary strong { color: var(--text); }
 
+.detail-card {
+  margin-top: 12px;
+  padding: 12px 12px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius);
+}
+.detail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.detail-title {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+.detail-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.detail-table-wrap {
+  width: 100%;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 320px;
+  background: rgba(15, 23, 42, 0.35);
+}
+.detail-table thead th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #cbd5e1;
+  padding: 10px 10px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.detail-table tbody td {
+  padding: 10px 10px;
+  font-size: 0.86rem;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.detail-table tbody tr:last-child td { border-bottom: 0; }
+.detail-kelas {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+.detail-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+}
+.detail-conf {
+  font-weight: 900;
+}
+
 /* ===================================================== PERF / PRESET CARD */
 .perf-card {
   background: var(--surface);
