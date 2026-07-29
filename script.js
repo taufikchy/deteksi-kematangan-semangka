@@ -132,12 +132,37 @@ function showDetecting(msg) {
   if (!el) return;
   el.textContent = msg || '⏳ Sedang mendeteksi...';
   el.style.display = 'block';
+  detectingShownAt = performance.now();
 }
 
 function hideDetecting() {
   const el = document.getElementById('detecting');
   if (!el) return;
   el.style.display = 'none';
+}
+
+let detectingShownAt = 0;
+
+function nextPaint() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+async function showDetectingPaint(msg) {
+  showDetecting(msg);
+  await nextPaint();
+}
+
+async function hideDetectingMin(minMs) {
+  const el = document.getElementById('detecting');
+  if (!el) return;
+  const elapsed = performance.now() - (detectingShownAt || 0);
+  const min = typeof minMs === 'number' ? minMs : 280;
+  if (elapsed < min) {
+    await new Promise((r) => setTimeout(r, min - elapsed));
+  }
+  hideDetecting();
 }
 
 async function ensureModelReady() {
@@ -551,7 +576,7 @@ async function detectImage(imgElement) {
   const placeholder = document.getElementById('placeholder');
   const detecting   = document.getElementById('detecting');
 
-  showDetecting('⏳ Menyiapkan deteksi...');
+  await showDetectingPaint('⏳ Menyiapkan deteksi...');
   const ready = await ensureModelReady();
   if (!ready) {
     hideDetecting();
@@ -583,11 +608,12 @@ async function detectImage(imgElement) {
   try {
     showDetecting('⏳ Sedang mendeteksi...');
     setStatus('🔍 Menganalisis gambar...');
+    await nextPaint();
     detections = await runInference(imgElement);
     drawBoxes(ctx, detections, displayScale, displayScale);
     updateResultPanel(detections);
   } finally {
-    if (detecting) detecting.style.display = 'none';
+    if (detecting) await hideDetectingMin(280);
   }
 
   if (detections.length === 0) {
@@ -643,13 +669,14 @@ function setupFileInputElement(inputId) {
       setStatusFrozen(true);
       showDetecting('⏳ Memproses foto...');
       setStatus('⏳ Memproses foto...');
+      await nextPaint();
       const src = inputId === 'camera-input' ? await fileToHtmlImage(file) : await fileToImageSource(file);
       await detectImage(src);
     } catch (err) {
       hideDetecting();
       setStatus('❌ Gagal memproses gambar: ' + (err && err.message ? err.message : String(err)));
     } finally {
-      hideDetecting();
+      await hideDetectingMin(180);
       setStatusFrozen(false);
       input.value = '';
     }
