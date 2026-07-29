@@ -35,12 +35,15 @@ let _onlineChannel = null;
 function setOnlineCount(val) {
   const badge = document.getElementById('online-badge');
   const el = document.getElementById('online-count');
+  console.log('[presence] setOnlineCount raw val =', val);
   if (!badge || !el) return;
-  if (typeof val !== 'number' || !Number.isFinite(val)) {
+  // Jangan pakai Math.max(1, ...) — itu menyembunyikan hitungan asli 0.
+  // Kalau presence gagal sinkron, val = 0 → sembunyikan badge (biar ketahuan bermasalah).
+  if (typeof val !== 'number' || !Number.isFinite(val) || val < 1) {
     badge.style.display = 'none';
     return;
   }
-  el.textContent = String(Math.max(1, Math.round(val)));
+  el.textContent = String(Math.round(val));
   badge.style.display = 'inline-flex';
 }
 
@@ -52,19 +55,33 @@ function initOnlinePresence() {
   if (!sb) return;
 
   const presenceKey = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : (Date.now().toString(16) + Math.random().toString(16).slice(2));
-  _onlineChannel = sb.channel('semangka-online', { config: { presence: { key: presenceKey } } });
+  // private: false → channel publik, tidak butuh policy RLS realtime.messages.
+  // Ini penting untuk skema publishable key baru yang sering default ke channel privat.
+  _onlineChannel = sb.channel('semangka-online', {
+    config: { presence: { key: presenceKey }, private: false }
+  });
 
   const sync = () => {
     const state = _onlineChannel.presenceState();
     const count = state ? Object.keys(state).length : 0;
+    console.log('[presence] sync → state =', state, '| count =', count);
     setOnlineCount(count);
   };
 
+  // Dengarkan sync, join, dan leave — supaya angka update saat ada yang masuk/keluar.
   _onlineChannel.on('presence', { event: 'sync' }, sync);
-  _onlineChannel.subscribe((status) => {
+  _onlineChannel.on('presence', { event: 'join' }, sync);
+  _onlineChannel.on('presence', { event: 'leave' }, sync);
+
+  _onlineChannel.subscribe(async (status, err) => {
+    console.log('[presence] subscribe status =', status, err || '');
     if (status === 'SUBSCRIBED') {
-      _onlineChannel.track({ online_at: new Date().toISOString() });
+      const res = await _onlineChannel.track({ online_at: new Date().toISOString() });
+      console.log('[presence] track result =', res);
       sync();
+    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+      console.warn('[presence] Realtime bermasalah:', status, err || '(tanpa detail)');
+      setOnlineCount(null); // sembunyikan badge kalau koneksi gagal
     }
   });
 
