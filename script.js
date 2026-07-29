@@ -28,6 +28,32 @@ let lastFpsSlot    = 0;
 let lastFpsFrames  = 0;
 let lastInferMs    = 0;
 
+function setPlaceholderState(state) {
+  const wrap = document.getElementById('placeholder');
+  const icon = document.getElementById('placeholder-icon');
+  const title = document.getElementById('placeholder-title');
+  const desc = document.getElementById('placeholder-desc');
+  if (!wrap) return;
+  if (state === 'upload') {
+    if (icon) icon.textContent = '🍉';
+    if (title) title.textContent = 'Belum ada gambar';
+    if (desc) desc.textContent = 'Pilih foto dari galeri atau gunakan Foto Sekarang untuk memulai.';
+    wrap.style.display = 'block';
+  } else if (state === 'webcam') {
+    if (icon) icon.textContent = '📷';
+    if (title) title.textContent = 'Kamera belum aktif';
+    if (desc) desc.textContent = 'Tekan Nyalakan Kamera, lalu izinkan akses kamera.';
+    wrap.style.display = 'block';
+  } else if (state === 'webcam-error') {
+    if (icon) icon.textContent = '⚠️';
+    if (title) title.textContent = 'Kamera tidak bisa dibuka';
+    if (desc) desc.textContent = 'Pastikan izin kamera aktif dan akses lewat HTTPS, lalu coba lagi.';
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
 // ============================================================
 // INISIALISASI: MUAT MODEL ONNX
 //
@@ -606,7 +632,7 @@ function switchMode(mode) {
     ctrlWebcam.classList.add('hidden');
     stopWebcam();
     canvas.width = 0; canvas.height = 0;
-    placeholder.style.display = 'block';
+    setPlaceholderState('upload');
     if (detecting) detecting.style.display = 'none';
     updateResultPanel([]);
   } else {
@@ -614,7 +640,7 @@ function switchMode(mode) {
     tabWebcam.classList.add('active');
     ctrlUpload.classList.add('hidden');
     ctrlWebcam.classList.remove('hidden');
-    placeholder.style.display = 'none';
+    setPlaceholderState('webcam');
     if (detecting) detecting.style.display = 'none';
     updateResultPanel([]);
   }
@@ -786,11 +812,13 @@ async function startWebcam() {
     lastDetections = [];
     window.__camVideoEl = video;
     setWebcamButton(true);
+    setPlaceholderState('hide');
 
     // ── Arsitektur 2 loop: render vs inference terpisah ──
     startRenderLoop(video);
     startInferenceLoop(video);
   } catch (e) {
+    setPlaceholderState('webcam-error');
     setStatus('❌ Gagal mengakses kamera: ' + e.message);
     console.error(e);
   }
@@ -805,6 +833,12 @@ function stopWebcam() {
   lastDetections = [];
   hideDetecting();
   setWebcamButton(false);
+  const tabWebcam = document.getElementById('tab-webcam');
+  if (tabWebcam && tabWebcam.classList.contains('active')) {
+    const canvas = document.getElementById('canvas');
+    if (canvas) { canvas.width = 0; canvas.height = 0; }
+    setPlaceholderState('webcam');
+  }
 }
 
 // ============================================================

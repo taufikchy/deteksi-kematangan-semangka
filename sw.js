@@ -1,5 +1,5 @@
 // sw.js — Service Worker untuk cache permanen model AI dan static assets
-const CACHE_VERSION = 'v6-semangka-deteksi-2026-07-29-proporsi-label';
+const CACHE_VERSION = 'v7-semangka-deteksi-2026-07-29-webcam-placeholder';
 const CORE_ASSETS = [
   './',
   './index.html',

@@ -44,7 +44,7 @@
       <ol class="steps">
         <li><span class="step-num">1</span>Pilih mode: Upload foto atau pakai Kamera langsung.</li>
         <li><span class="step-num">2</span>Aplikasi menandai setiap buah semangka yang terdeteksi.</li>
-        <li><span class="step-num">3</span>Hasil muncul secara otomatis: jumlah, persentase, dan status kematangan.</li>
+        <li><span class="step-num">3</span>Hasil muncul secara otomatis: jumlah, proporsi, dan status kematangan.</li>
       </ol>
     </section>
 
@@ -114,9 +114,9 @@
       <canvas id="canvas"></canvas>
       <div class="detecting" id="detecting" style="display:none">⏳ Sedang mendeteksi...</div>
       <div class="placeholder" id="placeholder">
-        <div class="placeholder-icon">🍉</div>
-        <div class="placeholder-title">Belum ada gambar</div>
-        <div class="placeholder-desc">Pilih foto dari galeri atau nyalakan kamera untuk memulai.</div>
+        <div class="placeholder-icon" id="placeholder-icon">🍉</div>
+        <div class="placeholder-title" id="placeholder-title">Belum ada gambar</div>
+        <div class="placeholder-desc" id="placeholder-desc">Pilih foto dari galeri atau gunakan Foto Sekarang untuk memulai.</div>
       </div>
     </div>
 
