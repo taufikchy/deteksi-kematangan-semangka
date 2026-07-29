@@ -415,7 +415,9 @@ function drawBoxes(ctx, detections, scaleX, scaleY) {
   const canvas = ctx.canvas;
   const rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
   const pxPerCssPx = (!isWebcamActive && rect && rect.width > 0) ? (canvas.width / rect.width) : 1;
-  const boost = (!isWebcamActive) ? Math.min(4, Math.max(1, pxPerCssPx)) : 1;
+  const cfg = isWebcamActive ? { line: 5, font: 32, boxH: 44, padX: 10, padY: 4, offX: 8, offY: 14, outline: 0 } :
+    { line: 4, font: 22, boxH: 32, padX: 8, padY: 4, offX: 7, offY: 10, outline: 2 };
+  const scale = isWebcamActive ? 1 : Math.min(3, Math.max(1, pxPerCssPx));
 
   detections.forEach(({ x1, y1, x2, y2, conf, classId }) => {
     const color = COLORS[classId];
@@ -425,27 +427,27 @@ function drawBoxes(ctx, detections, scaleX, scaleY) {
     const sx2 = x2 * scaleX, sy2 = y2 * scaleY;
 
     ctx.strokeStyle = color;
-    ctx.lineWidth   = 5 * boost;
+    ctx.lineWidth   = cfg.line * scale;
     ctx.strokeRect(sx1, sy1, sx2 - sx1, sy2 - sy1);
 
-    const fontSize = 32 * boost;
+    const fontSize = cfg.font * scale;
     ctx.font = `bold ${fontSize}px Segoe UI, sans-serif`;
     const textW = ctx.measureText(label).width;
-    const boxH  = 44 * boost;
+    const boxH  = cfg.boxH * scale;
     ctx.fillStyle = color;
-    const padX = 10 * boost;
-    const padY = 4 * boost;
-    const boxX = sx1 - 2 * boost;
+    const padX = cfg.padX * scale;
+    const padY = cfg.padY * scale;
+    const boxX = sx1 - 2 * scale;
     let boxY = sy1 - boxH - padY;
     if (boxY < 0) boxY = sy1 + padY;
     ctx.fillRect(boxX, boxY, textW + padX * 2, boxH);
 
     ctx.fillStyle = '#ffffff';
-    const textX = sx1 + 8 * boost;
-    const textY = boxY + boxH - 14 * boost;
-    if (boost > 1.05) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-      ctx.lineWidth = 4 * boost;
+    const textX = sx1 + cfg.offX * scale;
+    const textY = boxY + boxH - cfg.offY * scale;
+    if (cfg.outline > 0) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.lineWidth = cfg.outline * scale;
       ctx.strokeText(label, textX, textY);
     }
     ctx.fillText(label, textX, textY);
