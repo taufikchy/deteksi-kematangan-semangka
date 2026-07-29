@@ -1,5 +1,5 @@
 // sw.js — Service Worker untuk cache permanen model AI dan static assets
-const CACHE_VERSION = 'v9-semangka-deteksi-2026-07-29-presence-fix';
+const CACHE_VERSION = 'v10-semangka-deteksi-2026-07-29-supabase-upgrade';
 const CORE_ASSETS = [
   './',
   './index.html',
