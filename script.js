@@ -463,7 +463,7 @@ function setStatus(msg) {
 }
 
 // ============================================================
-// HELPER: UPDATE PANEL HASIL DETEKSI (angka + persentase)
+// HELPER: UPDATE PANEL HASIL DETEKSI (angka + proporsi)
 // detections = [{x1,y1,x2,y2,conf,classId}, ...]
 // Kelas 0 = Matang (ungu), Kelas 1 = Mentah (merah)
 // ============================================================
@@ -492,7 +492,7 @@ function updateResultPanel(detections) {
   const pctMVal = total === 0 ? 0 : Math.round((countMVal / total) * 100);
   const pctMeVal = total === 0 ? 0 : Math.round((countMeVal / total) * 100);
 
-  // Rata-rata confidence (akurasi rata-rata) per kelas, dalam persen
+  // Rata-rata confidence (keyakinan rata-rata) per kelas, dalam persen
   const avgConf = (arr) => arr.length === 0 ? 0 :
     arr.reduce((s, d) => s + d.conf, 0) / arr.length;
   const avgMatang = avgConf(matangList);
@@ -500,7 +500,7 @@ function updateResultPanel(detections) {
   const avgMatangPct = Math.round(avgMatang * 1000) / 10; // 1 desimal
   const avgMentahPct = Math.round(avgMentah * 1000) / 10;
 
-  // Jumlah + Persentase
+  // Jumlah + Proporsi
   if (countM) countM.textContent = countMVal;
   if (countMe) countMe.textContent = countMeVal;
   if (pctM) pctM.textContent = pctMVal + '%';
@@ -535,8 +535,8 @@ function updateResultPanel(detections) {
     if (total === 0) {
       summary.innerHTML = 'Belum ada data deteksi. Silakan pilih foto atau nyalakan kamera terlebih dahulu.';
     } else {
-      const sM = countMVal > 0 ? `📊 persen dari total <strong>${pctMVal}%</strong> · 🎯 rata-rata keyakinan AI <strong>${avgMatangPct}%</strong>` : '';
-      const sMe = countMeVal > 0 ? `📊 persen dari total <strong>${pctMeVal}%</strong> · 🎯 rata-rata keyakinan AI <strong>${avgMentahPct}%</strong>` : '';
+      const sM = countMVal > 0 ? `📊 proporsi jumlah deteksi <strong>${pctMVal}%</strong> · 🎯 rata-rata keyakinan AI <strong>${avgMatangPct}%</strong>` : '';
+      const sMe = countMeVal > 0 ? `📊 proporsi jumlah deteksi <strong>${pctMeVal}%</strong> · 🎯 rata-rata keyakinan AI <strong>${avgMentahPct}%</strong>` : '';
 
       const ringkasan = [];
       ringkasan.push(`🧺 Total terdeteksi <strong>${total} buah</strong> → Matang <strong>${countMVal}</strong> · Mentah <strong>${countMeVal}</strong>.`);

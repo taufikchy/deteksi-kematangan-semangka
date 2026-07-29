@@ -21,7 +21,7 @@ Dokumen ini menjelaskan aplikasi web deteksi kematangan semangka berbasis AI yan
 - **Bounding Box + Label:** menampilkan lokasi objek dan confidence per objek.
 - **Panel Hasil Deteksi (2 Kelas):**
   - **Jumlah buah** per kelas (Matang/Mentah).
-  - **Persen dari total** (komposisi jumlah buah dari semua deteksi).
+  - **Proporsi jumlah deteksi** (komposisi jumlah buah dari semua deteksi).
   - **Rata-rata keyakinan AI** (rata-rata confidence YOLO; konsisten dengan label di bounding box).
 - **Pengaturan Kecepatan Deteksi:** preset untuk menyeimbangkan performa vs ketelitian (terutama pada HP).
 - **Caching Model (Service Worker):** model `best.onnx` disimpan di cache agar pemuatan berikutnya lebih cepat dan stabil.
@@ -79,7 +79,7 @@ Bagian ini menjelaskan rancangan sistem secara ringkas, meliputi input, proses, 
 - **Visual output:** bounding box dan label di canvas.
 - **Output metrik:** panel hasil deteksi menampilkan:
   - Jumlah buah Matang & Mentah,
-  - Persen dari total (komposisi jumlah),
+  - Proporsi jumlah deteksi (komposisi jumlah),
   - Rata-rata keyakinan AI per kelas (rata-rata confidence YOLO).
 
 ### 4.4 Komponen Sistem
@@ -131,5 +131,5 @@ Bagian ini menjelaskan rancangan sistem secara ringkas, meliputi input, proses, 
 
 Untuk menghindari kebingungan:
 
-- **Persen dari Total** = persentase berdasarkan **jumlah buah** pada kelas tersebut dibanding total buah terdeteksi.
+- **Proporsi Jumlah Deteksi** = (jumlah kelas / total deteksi) × 100%. Ini persentase berdasarkan **jumlah buah** pada kelas tersebut dibanding total buah terdeteksi. **Bukan akurasi.**
 - **Rata-rata Keyakinan AI** = rata-rata confidence YOLO untuk kelas tersebut, ini yang konsisten dengan **angka pada label bounding box**.

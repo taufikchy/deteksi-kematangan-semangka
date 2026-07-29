@@ -1,5 +1,5 @@
 // sw.js — Service Worker untuk cache permanen model AI dan static assets
-const CACHE_VERSION = 'v5-semangka-deteksi-2026-07-29-bbox-tuning';
+const CACHE_VERSION = 'v6-semangka-deteksi-2026-07-29-proporsi-label';
 const CORE_ASSETS = [
   './',
   './index.html',

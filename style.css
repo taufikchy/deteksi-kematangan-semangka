@@ -352,6 +352,17 @@ body {
   margin-bottom: 14px;
 }
 .result-header h2 { margin: 0; }
+.result-note {
+  margin-top: -6px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
 .result-chip {
   font-size: 0.75rem;
   font-weight: 700;
