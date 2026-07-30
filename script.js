@@ -763,13 +763,26 @@ async function detectImage(imgElement) {
 
   ctx.drawImage(imgElement, 0, 0, drawW, drawH);
 
+  // ── Downscale sumber untuk inference ──
+  // Foto langsung dari kamera HP bisa 12–16MP. Jika gambar resolusi penuh
+  // itu diunggah sebagai tekstur GPU, memori WebGPU bisa habis/terfragmentasi
+  // sehingga alokasi buffer input model (640x640x3x4 = 4.9MB) gagal:
+  //   "createBuffer failed, size (4915200) is too large ... mappedAtCreation".
+  // Solusi: pakai versi yang sudah diperkecil (maks 1280px) sebagai input model,
+  // sama seperti jalur realtime kamera & pilih-dari-galeri yang sudah aman.
+  const inferSource = displayScale < 1 ? canvas : imgElement;
+
   let detections = [];
   try {
     showDetecting('⏳ Sedang mendeteksi...');
     setStatus('🔍 Menganalisis gambar...');
     await nextPaint();
-    detections = await runInference(imgElement);
-    drawBoxes(ctx, detections, displayScale, displayScale);
+    detections = await runInference(inferSource);
+    // Jika inference memakai canvas (sudah drawW×drawH), koordinat box sudah
+    // berada di ruang canvas → skala 1. Jika memakai imgElement (resolusi asli),
+    // box masih di ruang srcW×srcH → kalikan displayScale agar pas ke canvas.
+    const boxScale = inferSource === canvas ? 1 : displayScale;
+    drawBoxes(ctx, detections, boxScale, boxScale);
     updateResultPanel(detections);
   } finally {
     if (detecting) await hideDetectingMin(280);
