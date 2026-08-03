@@ -5,6 +5,7 @@ const MODEL_PATH    = 'best.onnx';
 const INPUT_SIZE    = 640;          // Ukuran input model (640x640)
 const CONF_THRESH   = 0.45;         // Ambang batas confidence score
 const IOU_THRESH    = 0.45;         // Ambang batas IoU untuk NMS
+const AGNOSTIC_NMS  = true;
 const CLASSES       = ['Matang', 'Mentah'];
 const COLORS        = ['#7C3AED', '#DC2626']; // Ungu = Matang, Merah = Mentah
 
@@ -450,14 +451,14 @@ function postprocess(data, dims, scale, padX, padY, srcW, srcH) {
     candidates.push({ x1, y1, x2, y2, conf, classId });
   }
 
-  // Terapkan NMS per kelas
+  if (AGNOSTIC_NMS) return nms(candidates, IOU_THRESH);
+
   const detections = [];
   for (let c = 0; c < CLASSES.length; c++) {
     const classBoxes = candidates.filter(d => d.classId === c);
     const kept = nms(classBoxes, IOU_THRESH);
     detections.push(...kept);
   }
-
   return detections;
 }
 
