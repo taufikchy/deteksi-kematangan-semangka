@@ -1,5 +1,5 @@
 // sw.js — Service Worker untuk cache permanen model AI dan static assets
-const CACHE_VERSION = 'v13-semangka-deteksi-2026-11-04-threshold-adjust';
+const CACHE_VERSION = 'v14-semangka-deteksi-2026-11-04-online-fallback';
 const CORE_ASSETS = [
   './',
   './index.html',
