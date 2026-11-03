@@ -3,7 +3,7 @@
 // ============================================================
 const MODEL_PATH    = 'best.onnx';
 const INPUT_SIZE    = 640;          // Ukuran input model (640x640)
-const CONF_THRESH   = 0.438;        // Ambang batas confidence score (43.8%)
+const CONF_THRESH   = 0.55;         // Ambang batas confidence score (ditingkatkan untuk filter bias)
 const IOU_THRESH    = 0.45;         // Ambang batas IoU untuk NMS (rentang 0.40 - 0.50)
 const AGNOSTIC_NMS  = true;
 const USE_REALTIME  = true;          // Set ke false jika Supabase limit/error untuk menggunakan Offline Mode
@@ -463,7 +463,8 @@ function postprocess(data, dims, scale, padX, padY, srcW, srcH) {
     const y2 = Math.max(0, Math.min(srcH, (y2_model - padY) / scale));
     // ─────────────────────────────────────────────────────────
 
-    candidates.push({ x1, y1, x2, y2, conf, classId });
+    const label = `${CLASSES[classId]} ${(conf * 100).toFixed(1)}%`;
+    candidates.push({ x1, y1, x2, y2, conf, classId, label });
   }
 
   if (AGNOSTIC_NMS) return nms(candidates, IOU_THRESH);
