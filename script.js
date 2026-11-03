@@ -3,8 +3,8 @@
 // ============================================================
 const MODEL_PATH    = 'best.onnx';
 const INPUT_SIZE    = 640;          // Ukuran input model (640x640)
-const CONF_THRESH   = 0.45;         // Ambang batas confidence score
-const IOU_THRESH    = 0.45;         // Ambang batas IoU untuk NMS
+const CONF_THRESH   = 0.438;        // Ambang batas confidence score (43.8%)
+const IOU_THRESH    = 0.45;         // Ambang batas IoU untuk NMS (rentang 0.40 - 0.50)
 const AGNOSTIC_NMS  = true;
 const CLASSES       = ['Matang', 'Mentah'];
 const COLORS        = ['#7C3AED', '#DC2626']; // Ungu = Matang, Merah = Mentah
