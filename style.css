@@ -140,6 +140,17 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
+.domain-warning {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-sm);
+  color: #fcd34d;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  text-align: left;
+}
 .hero-stat {
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--border-soft);

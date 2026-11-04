@@ -3,7 +3,7 @@
 // ============================================================
 const MODEL_PATH    = 'best.onnx';
 const INPUT_SIZE    = 640;          // Ukuran input model (640x640)
-const CONF_THRESH   = 0.55;         // Ambang batas confidence score (ditingkatkan untuk filter bias)
+const CONF_THRESH   = 0.60;         // Ambang batas ketat (60%) untuk meminimalkan False Positive (seperti melon)
 const IOU_THRESH    = 0.45;         // Ambang batas IoU untuk NMS (rentang 0.40 - 0.50)
 const AGNOSTIC_NMS  = true;
 const USE_REALTIME  = true;          // Set ke false jika Supabase limit/error untuk menggunakan Offline Mode
